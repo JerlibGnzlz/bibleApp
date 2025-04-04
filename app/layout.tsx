@@ -1,21 +1,22 @@
 /* eslint-disable @next/next/no-sync-scripts */
-import "@/app/globals.css"
-// import { ThemeProvider } from "@/components/theme-provider"
-import { Toaster } from "@/components/ui/sonner"
-import { ThemeProvider } from "next-themes"
+import "@/app/globals.css";
+import { Toaster } from "@/components/ui/sonner";
+import { ThemeProvider } from "next-themes";
+import { Metadata } from 'next';
 
-export const metadata = {
+// Definir los metadatos
+export const metadata: Metadata = {
   title: "Planificador de Prédicas",
   description: "Aplicación para planificar y organizar prédicas",
   manifest: "/manifest.json",
-  themeColor: "#ffffff",
+  themeColor: "#2c3e50",
   viewport: "width=device-width, initial-scale=1, maximum-scale=1",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
     title: "Planificador de Prédicas",
   },
-}
+};
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -25,16 +26,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png" />
         <link rel="mask-icon" href="/icons/safari-pinned-tab.svg" color="#5bbad5" />
+        <meta name="theme-color" content="#2c3e50" />
       </head>
       <body>
         <ThemeProvider attribute="class" defaultTheme="light">
           {children}
           <Toaster />
         </ThemeProvider>
-
-        {typeof window !== 'undefined' && <script src="./sw-register.js" />}
+        {/* Cargar el script para registrar el service worker */}
+        {typeof window !== 'undefined' && <script src="/sw-register.js" />}
       </body>
     </html>
-  )
+  );
 }
-
