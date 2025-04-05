@@ -3,6 +3,7 @@ import "@/app/globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "next-themes";
 import { Metadata } from 'next';
+import { Footer } from "@/components/ui/footer";
 
 // Definir los metadatos
 export const metadata: Metadata = {
@@ -32,6 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider attribute="class" defaultTheme="light">
           {children}
           <Toaster />
+          <Footer  />
         </ThemeProvider>
         {/* Cargar el script para registrar el service worker */}
         {typeof window !== 'undefined' && <script src="/sw-register.js" />}
