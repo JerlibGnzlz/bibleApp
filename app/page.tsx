@@ -15,7 +15,6 @@ import { PWADebug } from "@/components/pwa-debug"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 
-// Componente Dashboard interno para acceder al contexto
 function DashboardContent({
   onEdit,
   onTabChange
@@ -25,8 +24,6 @@ function DashboardContent({
 }) {
   const { tasks } = useTasks()
 
-
-  // Calcular estadísticas
   const upcomingTasks = tasks
     .filter(t => new Date(t.dueDate) >= new Date())
     .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
@@ -40,7 +37,6 @@ function DashboardContent({
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      {/* Próxima Prédica - Featured Card */}
       <div className="md:col-span-2 glass-card rounded-xl p-6 relative overflow-hidden group">
         <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
           <BookOpen className="w-24 h-24" />
@@ -85,7 +81,6 @@ function DashboardContent({
         )}
       </div>
 
-      {/* Estadísticas Rápidas */}
       <div className="grid grid-rows-2 gap-4">
         <div className="glass-card rounded-xl p-5 flex items-center justify-between">
           <div>
@@ -117,7 +112,6 @@ export default function Home() {
   const [showDebug, setShowDebug] = useState(false)
   const isMobile = useMobile()
 
-  // Switch to form tab when a task is selected for editing
   useEffect(() => {
     if (selectedTask) {
       setActiveTab("form")
@@ -129,7 +123,6 @@ export default function Home() {
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
         <div className="container mx-auto py-6 px-4 md:py-8 space-y-6">
 
-          {/* Header */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
             <div>
               <h1 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600">
@@ -159,7 +152,6 @@ export default function Home() {
             onTabChange={setActiveTab}
           />
 
-          {/* Main Content Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className={`grid w-full ${isMobile ? 'grid-cols-3' : 'grid-cols-3 w-[400px]'} mb-6 glass-card p-1`}>
               <TabsTrigger value="table" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary">

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @next/next/no-sync-scripts */
 import "@/app/globals.css";
 import { Toaster } from "@/components/ui/sonner";

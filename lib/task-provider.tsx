@@ -9,15 +9,12 @@ const TaskContext = createContext<TaskContextType | undefined>(undefined)
 
 export function TaskProvider({ children }: { children: React.ReactNode }) {
     const [tasks, setTasks] = useState<Task[]>([])
-    // Estado para controlar que la notificación solo salga una vez por sesión para no ser molesto
     const [hasCheckedUpcoming, setHasCheckedUpcoming] = useState(false)
 
-    // Cargar tareas al iniciar desde localStorage
     useEffect(() => {
         const storedTasks = localStorage.getItem("tasks")
         if (storedTasks) {
             try {
-                // Parse date strings back to Date objects
                 const parsedTasks = JSON.parse(storedTasks).map((task: { dueDate: string; createdAt: string }) => ({
                     ...task,
                     dueDate: new Date(task.dueDate),
@@ -30,12 +27,10 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
         }
     }, [])
 
-    // Guardar tareas en localStorage cuando cambian
     useEffect(() => {
         localStorage.setItem("tasks", JSON.stringify(tasks))
     }, [tasks])
 
-    // Verificar tareas próximas (Sistema de Notificaciones)
     useEffect(() => {
         if (tasks.length === 0 || hasCheckedUpcoming) return
 
