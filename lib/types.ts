@@ -5,7 +5,7 @@ export interface Task {
     notes?: string
     dueDate: Date | string
     priority: "low" | "medium" | "high"
-    category?: string
+    category: string
     createdAt: Date | string
 }
 
