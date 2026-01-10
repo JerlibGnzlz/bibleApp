@@ -12,10 +12,10 @@ import { useMobile } from "@/hooks/use-mobile"
 import type { Task } from "@/lib/types"
 
 interface TaskCalendarProps {
-    onSelectTask: (task: Task) => void
+    onEdit: (task: Task) => void
 }
 
-export function TaskCalendar({ onSelectTask }: TaskCalendarProps) {
+export function TaskCalendar({ onEdit }: TaskCalendarProps) {
     const { tasks } = useTasks()
     const [selectedDate, setSelectedDate] = useState<Date>(new Date())
     const isMobile = useMobile()
@@ -81,7 +81,7 @@ export function TaskCalendar({ onSelectTask }: TaskCalendarProps) {
                                 </div>
                                 <p className="text-sm text-muted-foreground mb-2">Versículo: {task.verse}</p>
                                 {task.notes && <p className="text-sm mb-3">{task.notes}</p>}
-                                <Button variant="outline" size="sm" onClick={() => onSelectTask(task)} className="w-full mt-2">
+                                <Button variant="outline" size="sm" onClick={() => onEdit(task)} className="w-full mt-2">
                                     Editar
                                 </Button>
                             </div>
