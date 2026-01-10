@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card, CardContent } from "@/components/ui/card"
 import { TaskForm } from "@/components/task-form"
 import { TaskTable } from "@/components/task-table"
 import { TaskCalendar } from "@/components/task-calendar"
@@ -25,7 +24,7 @@ function DashboardContent({
   onTabChange: (tab: string) => void
 }) {
   const { tasks } = useTasks()
-  const isMobile = useMobile()
+
 
   // Calcular estadísticas
   const upcomingTasks = tasks

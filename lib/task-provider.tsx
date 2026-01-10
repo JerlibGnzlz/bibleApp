@@ -18,7 +18,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
         if (storedTasks) {
             try {
                 // Parse date strings back to Date objects
-                const parsedTasks = JSON.parse(storedTasks).map((task: any) => ({
+                const parsedTasks = JSON.parse(storedTasks).map((task: { dueDate: string; createdAt: string }) => ({
                     ...task,
                     dueDate: new Date(task.dueDate),
                     createdAt: new Date(task.createdAt)

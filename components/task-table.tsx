@@ -198,7 +198,7 @@ export function TaskTable({ onEdit }: TaskTableProps) {
                                     </div>
                                     {task.notes && (
                                         <div className="text-sm mt-1 text-muted-foreground/80 italic line-clamp-2">
-                                            "{task.notes}"
+                                            &quot;{task.notes}&quot;
                                         </div>
                                     )}
                                 </div>

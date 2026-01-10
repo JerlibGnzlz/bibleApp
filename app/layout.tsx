@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   },
 };
 
-import { AuthProvider } from "@/lib/auth-provider";
+
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -35,7 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider attribute="class" defaultTheme="light">
           {children}
           <Toaster />
-          <Footer  />
+          <Footer />
         </ThemeProvider>
         {/* Cargar el script para registrar el service worker */}
         {typeof window !== 'undefined' && <script src="/sw-register.js" />}
