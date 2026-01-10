@@ -3,14 +3,19 @@
 import "@/app/globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "next-themes";
-import { Metadata } from 'next';
+import { Metadata, Viewport } from 'next';
+
+export const viewport: Viewport = {
+  themeColor: "#2c3e50",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
 
 export const metadata: Metadata = {
   title: "Planificador de Prédicas",
   description: "Aplicación para planificar y organizar prédicas",
   manifest: "/manifest.json",
-  themeColor: "#2c3e50",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -26,7 +31,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png" />
         <link rel="mask-icon" href="/icons/safari-pinned-tab.svg" color="#5bbad5" />
-        <meta name="theme-color" content="#2c3e50" />
       </head>
       <body>
         <ThemeProvider attribute="class" defaultTheme="light">
