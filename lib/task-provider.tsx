@@ -1,126 +1,88 @@
 "use client"
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
+import { createContext, useContext, useEffect, useState } from "react"
 import { toast } from "sonner"
-import { isBefore, isAfter, differenceInDays, startOfDay } from "date-fns"
+import { addDays, isBefore, isAfter } from "date-fns"
 import type { Task, TaskContextType } from "@/lib/types"
 
-// Create context with proper typing
-const TaskContext = createContext<TaskContextType | null>(null)
+const TaskContext = createContext<TaskContextType | undefined>(undefined)
 
-interface TaskProviderProps {
-  children: ReactNode
-}
+export function TaskProvider({ children }: { children: React.ReactNode }) {
+    const [tasks, setTasks] = useState<Task[]>([])
+    // Estado para controlar que la notificación solo salga una vez por sesión para no ser molesto
+    const [hasCheckedUpcoming, setHasCheckedUpcoming] = useState(false)
 
-export function TaskProvider({ children }: TaskProviderProps) {
-  const [tasks, setTasks] = useState<Task[]>([])
+    // Cargar tareas al iniciar desde localStorage
+    useEffect(() => {
+        const storedTasks = localStorage.getItem("tasks")
+        if (storedTasks) {
+            try {
+                // Parse date strings back to Date objects
+                const parsedTasks = JSON.parse(storedTasks).map((task: any) => ({
+                    ...task,
+                    dueDate: new Date(task.dueDate),
+                    createdAt: new Date(task.createdAt)
+                }))
+                setTasks(parsedTasks)
+            } catch (error) {
+                console.error("Failed to parse tasks", error)
+            }
+        }
+    }, [])
 
-  // Load tasks from localStorage on mount
-  useEffect(() => {
-    const storedTasks = localStorage.getItem("tasks")
-    if (storedTasks) {
-      try {
-        setTasks(JSON.parse(storedTasks))
-      } catch (error) {
-        console.error("Error parsing tasks from localStorage:", error)
-      }
-    }
-  }, [])
+    // Guardar tareas en localStorage cuando cambian
+    useEffect(() => {
+        localStorage.setItem("tasks", JSON.stringify(tasks))
+    }, [tasks])
 
-  // Save tasks to localStorage whenever they change
-  useEffect(() => {
-    localStorage.setItem("tasks", JSON.stringify(tasks))
-  }, [tasks])
+    // Verificar tareas próximas (Sistema de Notificaciones)
+    useEffect(() => {
+        if (tasks.length === 0 || hasCheckedUpcoming) return
 
-  // Check for upcoming tasks and show notifications
-  useEffect(() => {
-    const checkUpcomingTasks = () => {
-      const today = startOfDay(new Date()) // Use start of day for consistent comparison
+        const today = new Date()
+        const threeDaysFromNow = addDays(today, 3)
 
-      const upcomingTasks = tasks
-        .filter((task) => {
-          const taskDate = startOfDay(new Date(task.dueDate))
-          return isAfter(taskDate, today) || taskDate.getTime() === today.getTime()
-        })
-        .sort((a, b) => {
-          // Sort by date (earliest first)
-          return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
-        })
+        const upcomingCount = tasks.filter(task => {
+            const dueDate = new Date(task.dueDate)
+            return isAfter(dueDate, today) && isBefore(dueDate, threeDaysFromNow)
+        }).length
 
-      const overdueTasks = tasks.filter((task) => {
-        const taskDate = startOfDay(new Date(task.dueDate))
-        return isBefore(taskDate, today)
-      })
-
-      if (upcomingTasks.length > 0) {
-        // Get the first upcoming task (earliest due date)
-        const nextTaskDate = startOfDay(new Date(upcomingTasks[0].dueDate))
-
-        // Calculate days remaining
-        let daysMessage = ""
-
-        if (nextTaskDate.getTime() === today.getTime()) {
-          daysMessage = "hoy"
-        } else {
-          const daysRemaining = differenceInDays(nextTaskDate, today)
-          const dayText = daysRemaining === 1 ? "día" : "días"
-          daysMessage = `en  ${daysRemaining} ${dayText}`
+        if (upcomingCount > 0) {
+            toast.info(`Recordatorio Semanal`, {
+                description: `Tienes ${upcomingCount} prédica(s) para los próximos días.`,
+                duration: 5000,
+            })
         }
 
-        toast.info("Prédicas próximas", {
-          description: `Tienes ${upcomingTasks.length} prédica(s) ${daysMessage}.`,
-        })
-      }
+        setHasCheckedUpcoming(true)
+    }, [tasks, hasCheckedUpcoming])
 
-      if (overdueTasks.length > 0) {
-        toast.error("Prédicas vencidas", {
-          description: `Tienes ${overdueTasks.length} prédica(s) vencidas.`,
-        })
-      }
+    const addTask = (task: Task) => {
+        setTasks((prev) => [...prev, task])
+        toast.success("Prédica agregada correctamente")
     }
 
-    // Check on initial load
-    checkUpcomingTasks()
+    const updateTask = (updatedTask: Task) => {
+        setTasks((prev) => prev.map((t) => (t.id === updatedTask.id ? updatedTask : t)))
+        toast.success("Prédica actualizada")
+    }
 
-    // Set up interval to check periodically (every hour)
-    const interval = setInterval(checkUpcomingTasks, 3600000)
+    const deleteTask = (id: string) => {
+        setTasks((prev) => prev.filter((t) => t.id !== id))
+        toast.error("Prédica eliminada")
+    }
 
-    return () => clearInterval(interval)
-  }, [tasks])
-
-  // Add a new task
-  const addTask = (task: Task) => {
-    setTasks((prev) => [...prev, task])
-    toast.success("Prédica agregada", {
-      description: "La prédica ha sido agregada exitosamente.",
-    })
-  }
-
-  // Update an existing task
-  const updateTask = (updatedTask: Task) => {
-    setTasks((prev) => prev.map((task) => (task.id === updatedTask.id ? updatedTask : task)))
-    toast.success("Prédica actualizada", {
-      description: "La prédica ha sido actualizada exitosamente.",
-    })
-  }
-
-  // Delete a task
-  const deleteTask = (taskId: string) => {
-    setTasks((prev) => prev.filter((task) => task.id !== taskId))
-    toast.success("Prédica eliminada", {
-      description: "La prédica ha sido eliminada exitosamente.",
-    })
-  }
-
-  return <TaskContext.Provider value={{ tasks, addTask, updateTask, deleteTask }}>{children}</TaskContext.Provider>
+    return (
+        <TaskContext.Provider value={{ tasks, addTask, updateTask, deleteTask }}>
+            {children}
+        </TaskContext.Provider>
+    )
 }
 
-// Custom hook to use the task context
-export function useTasks(): TaskContextType {
-  const context = useContext(TaskContext)
-  if (!context) {
-    throw new Error("useTasks must be used within a TaskProvider")
-  }
-  return context
+export function useTasks() {
+    const context = useContext(TaskContext)
+    if (context === undefined) {
+        throw new Error("useTasks must be used within a TaskProvider")
+    }
+    return context
 }
-

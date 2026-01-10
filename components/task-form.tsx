@@ -15,6 +15,13 @@ import { Textarea } from "@/components/ui/textarea"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 // import { useTasks } from "@/lib/task-provider"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -36,6 +43,9 @@ const formSchema = z.object({
     priority: z.enum(["low", "medium", "high"], {
         required_error: "Por favor seleccione una prioridad.",
     }),
+    category: z.string({
+        required_error: "Por favor seleccione una categoría.",
+    }).default("Dominical"),
 })
 
 type FormValues = z.infer<typeof formSchema>
@@ -55,6 +65,7 @@ export function TaskForm({ task = null, onComplete }: TaskFormProps) {
             verse: "",
             notes: "",
             priority: "medium",
+            category: "Dominical",
             dueDate: new Date(),
         },
     })
@@ -63,6 +74,7 @@ export function TaskForm({ task = null, onComplete }: TaskFormProps) {
         if (task) {
             form.reset({
                 ...task,
+                category: task.category || "Dominical",
                 dueDate: new Date(task.dueDate),
             })
         } else {
@@ -71,6 +83,7 @@ export function TaskForm({ task = null, onComplete }: TaskFormProps) {
                 verse: "",
                 notes: "",
                 priority: "medium",
+                category: "Dominical",
                 dueDate: new Date(),
             })
         }
@@ -95,6 +108,7 @@ export function TaskForm({ task = null, onComplete }: TaskFormProps) {
             verse: "",
             notes: "",
             priority: "medium",
+            category: "Dominical",
             dueDate: new Date(),
         })
 
@@ -102,7 +116,7 @@ export function TaskForm({ task = null, onComplete }: TaskFormProps) {
     }
 
     return (
-        <Card>
+        <Card className="glass-card border-none shadow-none bg-transparent">
             <CardHeader>
                 <CardTitle>{task ? "Editar" : "Agregar"} Prédica</CardTitle>
             </CardHeader>
@@ -116,26 +130,55 @@ export function TaskForm({ task = null, onComplete }: TaskFormProps) {
                                 <FormItem>
                                     <FormLabel>Título de la Prédica</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="Ingrese el título" {...field} />
+                                        <Input placeholder="Ingrese el título" className="glass-input" {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
 
-                        <FormField
-                            control={form.control}
-                            name="verse"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Versículo</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="Ej: Juan 3:16" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="verse"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Versículo</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="Ej: Juan 3:16" className="glass-input" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="category"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Categoría</FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl>
+                                                <SelectTrigger className="glass-input">
+                                                    <SelectValue placeholder="Seleccionar categoría" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                <SelectItem value="Dominical">Dominical</SelectItem>
+                                                <SelectItem value="Estudio Bíblico">Estudio Bíblico</SelectItem>
+                                                <SelectItem value="Jóvenes">Jóvenes</SelectItem>
+                                                <SelectItem value="Evangelismo">Evangelismo</SelectItem>
+                                                <SelectItem value="Mujeres">Mujeres</SelectItem>
+                                                <SelectItem value="Hombres">Hombres</SelectItem>
+                                                <SelectItem value="Especial">Especial</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
 
                         <FormField
                             control={form.control}
@@ -144,7 +187,7 @@ export function TaskForm({ task = null, onComplete }: TaskFormProps) {
                                 <FormItem>
                                     <FormLabel>Notas</FormLabel>
                                     <FormControl>
-                                        <Textarea placeholder="Notas adicionales" {...field} />
+                                        <Textarea placeholder="Notas adicionales / Bosquejo" className="glass-input min-h-[100px]" {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -162,7 +205,7 @@ export function TaskForm({ task = null, onComplete }: TaskFormProps) {
                                             <FormControl>
                                                 <Button
                                                     variant={"outline"}
-                                                    className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}
+                                                    className={cn("w-full pl-3 text-left font-normal glass-input", !field.value && "text-muted-foreground")}
                                                 >
                                                     {field.value ? format(field.value, "PPP", { locale: es }) : <span>Seleccione una fecha</span>}
                                                     <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
@@ -200,19 +243,19 @@ export function TaskForm({ task = null, onComplete }: TaskFormProps) {
                                                 <FormControl>
                                                     <RadioGroupItem value="low" />
                                                 </FormControl>
-                                                <FormLabel className="font-normal text-green-600">Baja</FormLabel>
+                                                <FormLabel className="font-normal text-green-600 dark:text-green-400 cursor-pointer">Baja</FormLabel>
                                             </FormItem>
                                             <FormItem className="flex items-center space-x-2 space-y-0">
                                                 <FormControl>
                                                     <RadioGroupItem value="medium" />
                                                 </FormControl>
-                                                <FormLabel className="font-normal text-yellow-600">Media</FormLabel>
+                                                <FormLabel className="font-normal text-yellow-600 dark:text-yellow-400 cursor-pointer">Media</FormLabel>
                                             </FormItem>
                                             <FormItem className="flex items-center space-x-2 space-y-0">
                                                 <FormControl>
                                                     <RadioGroupItem value="high" />
                                                 </FormControl>
-                                                <FormLabel className="font-normal text-red-600">Alta</FormLabel>
+                                                <FormLabel className="font-normal text-red-600 dark:text-red-400 cursor-pointer">Alta</FormLabel>
                                             </FormItem>
                                         </RadioGroup>
                                     </FormControl>
@@ -225,7 +268,7 @@ export function TaskForm({ task = null, onComplete }: TaskFormProps) {
                             <Button type="submit" className="flex-1">
                                 {task ? "Actualizar" : "Guardar"}
                             </Button>
-                            <Button type="button" variant="outline" onClick={onComplete} className="flex-1">
+                            <Button type="button" variant="outline" onClick={onComplete} className="flex-1 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30">
                                 Cancelar
                             </Button>
                         </div>

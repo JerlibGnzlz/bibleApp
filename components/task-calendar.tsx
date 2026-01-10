@@ -38,7 +38,7 @@ export function TaskCalendar({ onSelectTask }: TaskCalendarProps) {
 
     return (
         <div className={isMobile ? "space-y-4" : "grid grid-cols-1 md:grid-cols-2 gap-6"}>
-            <Card>
+            <Card className="glass-card border-none shadow-none bg-transparent">
                 <CardHeader className="pb-2">
                     <CardTitle>Calendario</CardTitle>
                     <CardDescription>Seleccione una fecha para ver las prédicas programadas</CardDescription>
@@ -60,7 +60,7 @@ export function TaskCalendar({ onSelectTask }: TaskCalendarProps) {
                 </CardContent>
             </Card>
 
-            <Card>
+            <Card className="glass-card border-none shadow-none bg-transparent">
                 <CardHeader>
                     <CardTitle>Prédicas para {format(selectedDate, "PPP", { locale: es })}</CardTitle>
                     <CardDescription>
