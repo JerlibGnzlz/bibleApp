@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @next/next/no-sync-scripts */
 import "@/app/globals.css";
+import Script from "next/script";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "next-themes";
 import { Metadata, Viewport } from 'next';
@@ -34,14 +35,31 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png" />
         <link rel="mask-icon" href="/icons/safari-pinned-tab.svg" color="#2c3e50" />
+        {process.env.NODE_ENV === "development" && (
+          <Script id="dev-sw-cleanup" strategy="beforeInteractive">
+            {`
+              if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(function(regs) {
+                  regs.forEach(function(r) { r.unregister(); });
+                });
+                if (typeof caches !== 'undefined') {
+                  caches.keys().then(function(keys) {
+                    keys.forEach(function(k) { caches.delete(k); });
+                  });
+                }
+              }
+            `}
+          </Script>
+        )}
       </head>
       <body className="overflow-x-hidden">
         <ThemeProvider attribute="class" defaultTheme="light">
           {children}
           <Toaster position="top-center" />
         </ThemeProvider>
-        {/* Registro del Service Worker para PWA */}
-        <script src="/sw-register.js" defer />
+        {process.env.NODE_ENV === "production" && (
+          <Script src="/sw-register.js" strategy="afterInteractive" />
+        )}
       </body>
     </html>
   );

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useRef, useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -44,6 +44,8 @@ interface TaskFormProps {
 
 export function TaskForm({ task = null, onComplete }: TaskFormProps) {
     const { addTask, updateTask } = useTasks()
+    const submitSectionRef = useRef<HTMLDivElement>(null)
+    const [toolbarFloating, setToolbarFloating] = useState(false)
 
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
@@ -236,6 +238,8 @@ export function TaskForm({ task = null, onComplete }: TaskFormProps) {
                                                     onChange={field.onChange}
                                                     placeholder="Escribe tu bosquejo: usa títulos, listas, negritas..."
                                                     className="min-h-[400px]"
+                                                    bottomAvoidRef={submitSectionRef}
+                                                    onFloatingChange={setToolbarFloating}
                                                 />
                                             </FormControl>
                                             <FormMessage />
@@ -245,7 +249,13 @@ export function TaskForm({ task = null, onComplete }: TaskFormProps) {
                             </div>
                         </div>
 
-                        <div className="flex gap-3 pt-2">
+                        <div
+                            ref={submitSectionRef}
+                            className={cn(
+                                "flex gap-3 pt-2 scroll-mt-4 transition-[padding]",
+                                toolbarFloating && "pb-2"
+                            )}
+                        >
                             <Button type="submit" className="flex-1 h-11 text-base shadow-lg shadow-primary/20">
                                 {task ? "Actualizar" : "Programar"} Prédica
                             </Button>

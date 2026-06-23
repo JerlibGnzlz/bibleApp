@@ -5,7 +5,7 @@ import StarterKit from "@tiptap/starter-kit"
 import Underline from "@tiptap/extension-underline"
 import TextAlign from "@tiptap/extension-text-align"
 import Placeholder from "@tiptap/extension-placeholder"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, type RefObject } from "react"
 import { createPortal } from "react-dom"
 import {
     Bold, Italic, Underline as UnderlineIcon,
@@ -14,12 +14,19 @@ import {
     Undo, Redo, Quote
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useFontZoom } from "@/hooks/use-font-zoom"
+import { FontZoomControls } from "@/components/font-zoom-controls"
+
+const EDITOR_BASE_FONT_PX = 17
+const EDITOR_ZOOM_KEY = "editor-font-zoom"
 
 interface RichTextEditorProps {
     value?: string
     onChange?: (value: string) => void
     placeholder?: string
     className?: string
+    bottomAvoidRef?: RefObject<HTMLElement | null>
+    onFloatingChange?: (visible: boolean) => void
 }
 
 const ToolbarButton = ({
@@ -51,7 +58,7 @@ const ToolbarButton = ({
 
 function EditorToolbar({ editor, className }: { editor: Editor; className?: string }) {
     return (
-        <div className={cn("flex flex-wrap items-center justify-center gap-0.5 px-2 py-1.5", className)}>
+        <div className={cn("flex flex-wrap items-center justify-center gap-0.5 px-2 py-1.5 flex-1 min-w-0", className)}>
             <ToolbarButton onClick={() => editor.chain().focus().undo().run()} title="Deshacer">
                 <Undo className="h-3.5 w-3.5" />
             </ToolbarButton>
@@ -151,11 +158,20 @@ function EditorToolbar({ editor, className }: { editor: Editor; className?: stri
     )
 }
 
-export function RichTextEditor({ value, onChange, placeholder, className }: RichTextEditorProps) {
+export function RichTextEditor({
+    value,
+    onChange,
+    placeholder,
+    className,
+    bottomAvoidRef,
+    onFloatingChange,
+}: RichTextEditorProps) {
     const containerRef = useRef<HTMLDivElement>(null)
     const inlineToolbarRef = useRef<HTMLDivElement>(null)
     const [inlineToolbarVisible, setInlineToolbarVisible] = useState(true)
     const [editorInView, setEditorInView] = useState(true)
+    const [bottomSectionVisible, setBottomSectionVisible] = useState(false)
+    const { zoom, zoomIn, zoomOut, resetZoom } = useFontZoom(EDITOR_ZOOM_KEY, 1.1)
 
     const editor = useEditor({
         extensions: [
@@ -172,7 +188,8 @@ export function RichTextEditor({ value, onChange, placeholder, className }: Rich
         content: value || "",
         editorProps: {
             attributes: {
-                class: "min-h-[360px] focus:outline-none text-base sm:text-sm leading-relaxed text-foreground px-3 sm:px-4 py-3 rich-content w-full max-w-full break-words",
+                class: "min-h-[360px] focus:outline-none leading-relaxed text-foreground px-3 sm:px-4 py-3 rich-content editor-content w-full max-w-full break-words",
+                style: `font-size: ${EDITOR_BASE_FONT_PX * zoom}px`,
             },
         },
         onUpdate({ editor }) {
@@ -184,11 +201,22 @@ export function RichTextEditor({ value, onChange, placeholder, className }: Rich
         if (!editor) return
         const currentHtml = editor.getHTML()
         if (value !== undefined && value !== currentHtml) {
-            editor.commands.setContent(value, false)
+            editor.commands.setContent(value, { emitUpdate: false })
         }
     }, [value, editor])
 
-    // Barra flotante abajo cuando la superior ya no se ve pero el editor sí
+    useEffect(() => {
+        if (!editor) return
+        editor.setOptions({
+            editorProps: {
+                attributes: {
+                    class: "min-h-[360px] focus:outline-none leading-relaxed text-foreground px-3 sm:px-4 py-3 rich-content editor-content w-full max-w-full break-words",
+                    style: `font-size: ${EDITOR_BASE_FONT_PX * zoom}px`,
+                },
+            },
+        })
+    }, [editor, zoom])
+
     useEffect(() => {
         const toolbar = inlineToolbarRef.current
         const container = containerRef.current
@@ -212,9 +240,40 @@ export function RichTextEditor({ value, onChange, placeholder, className }: Rich
         }
     }, [editor])
 
+    useEffect(() => {
+        const bottomEl = bottomAvoidRef?.current
+        if (!bottomEl) return
+
+        const observer = new IntersectionObserver(
+            ([entry]) => setBottomSectionVisible(entry.isIntersecting),
+            { threshold: 0.1 }
+        )
+        observer.observe(bottomEl)
+        return () => observer.disconnect()
+    }, [bottomAvoidRef, editor])
+
+    const floatingVisible = !inlineToolbarVisible && editorInView && !bottomSectionVisible
+
+    useEffect(() => {
+        onFloatingChange?.(floatingVisible)
+    }, [floatingVisible, onFloatingChange])
+
     if (!editor) return null
 
-    const floatingVisible = !inlineToolbarVisible && editorInView
+    const toolbarRow = (compact = false) => (
+        <div className="flex items-center gap-1 w-full">
+            <EditorToolbar editor={editor} />
+            <div className="flex-shrink-0 border-l border-border/40 pl-1 ml-0.5">
+                <FontZoomControls
+                    zoom={zoom}
+                    onZoomIn={zoomIn}
+                    onZoomOut={zoomOut}
+                    onReset={resetZoom}
+                    compact={compact}
+                />
+            </div>
+        </div>
+    )
 
     return (
         <>
@@ -223,21 +282,21 @@ export function RichTextEditor({ value, onChange, placeholder, className }: Rich
                     ref={inlineToolbarRef}
                     className="border-b border-border/40 bg-muted/30 rounded-t-lg"
                 >
-                    <EditorToolbar editor={editor} />
+                    {toolbarRow(false)}
                 </div>
 
-                <div className={cn("rounded-b-lg", floatingVisible && "pb-20")}>
+                <div className="rounded-b-lg">
                     <EditorContent editor={editor} />
                 </div>
             </div>
 
             {floatingVisible && typeof document !== "undefined" && createPortal(
                 <div
-                    className="fixed left-0 right-0 z-50 px-3 pointer-events-none"
-                    style={{ bottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
+                    className="fixed left-0 right-0 z-40 px-2 pointer-events-none"
+                    style={{ top: "max(0.5rem, env(safe-area-inset-top))" }}
                 >
                     <div className="mx-auto max-w-3xl pointer-events-auto rounded-xl border border-border/60 bg-background/95 backdrop-blur-md shadow-lg">
-                        <EditorToolbar editor={editor} />
+                        {toolbarRow(true)}
                     </div>
                 </div>,
                 document.body

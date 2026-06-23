@@ -36,7 +36,8 @@ self.addEventListener('fetch', event => {
     event.respondWith(
       caches.match(event.request).then(response => response || fetch(event.request))
     );
-  } else if (requestUrl.pathname.startsWith('/_next/static')) {
+  } else if (requestUrl.pathname.startsWith('/_next/static') && !requestUrl.search) {
+    // Solo cachear assets estáticos de producción (sin query ?v= de desarrollo)
     event.respondWith(
       caches.match(event.request).then(response => {
         return response || fetch(event.request).then(fetchResponse => {
