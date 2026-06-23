@@ -83,9 +83,9 @@ export function RichTextEditor({ value, onChange, placeholder, className }: Rich
     if (!editor) return null
 
     return (
-        <div className={cn("border border-border/60 rounded-lg overflow-hidden bg-background/50", className)}>
-            {/* Toolbar */}
-            <div className="flex flex-wrap items-center gap-0.5 px-2 py-1.5 border-b border-border/40 bg-muted/30">
+        <div className={cn("border border-border/60 rounded-lg bg-background/50", className)}>
+            {/* Toolbar flotante al hacer scroll */}
+            <div className="sticky top-0 z-40 flex flex-wrap items-center gap-0.5 px-2 py-1.5 border-b border-border/40 bg-background/95 backdrop-blur-md shadow-sm rounded-t-lg">
                 {/* History */}
                 <ToolbarButton onClick={() => editor.chain().focus().undo().run()} title="Deshacer">
                     <Undo className="h-3.5 w-3.5" />
@@ -189,7 +189,9 @@ export function RichTextEditor({ value, onChange, placeholder, className }: Rich
             </div>
 
             {/* Editor area */}
-            <EditorContent editor={editor} />
+            <div className="rounded-b-lg">
+                <EditorContent editor={editor} />
+            </div>
         </div>
     )
 }
