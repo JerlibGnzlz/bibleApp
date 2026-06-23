@@ -127,39 +127,55 @@
 
 /* ── Modo predicar: lectura completa, solo scroll vertical ── */
 .preach-content {
-  @apply text-lg md:text-lg leading-relaxed;
+  line-height: 1.65;
   word-wrap: break-word;
   overflow-wrap: anywhere;
+  word-break: break-word;
   max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
 }
 .preach-content * {
   max-width: 100%;
   overflow-wrap: anywhere;
   word-break: break-word;
+  box-sizing: border-box;
 }
 .preach-content h2 {
-  @apply text-xl sm:text-2xl md:text-3xl font-bold mt-6 mb-3 text-foreground;
+  font-size: 1.45em;
+  @apply font-bold mt-6 mb-3 text-foreground;
 }
 .preach-content h3 {
-  @apply text-lg sm:text-xl md:text-2xl font-semibold mt-5 mb-2 text-foreground;
+  font-size: 1.2em;
+  @apply font-semibold mt-5 mb-2 text-foreground;
 }
 .preach-content p {
-  @apply mb-3 leading-relaxed;
+  @apply mb-3;
 }
 .preach-content ul,
 .preach-content ol {
-  @apply pl-5 sm:pl-6 mb-4 space-y-2;
+  padding-left: 1.25em;
+  @apply mb-4 space-y-2;
 }
 .preach-content blockquote {
-  @apply border-l-4 border-primary/50 pl-3 sm:pl-4 italic text-muted-foreground my-4 py-1 text-base;
+  @apply border-l-4 border-primary/50 pl-3 sm:pl-4 italic text-muted-foreground my-4 py-1;
+  font-size: 0.95em;
 }
 .preach-content li {
-  @apply leading-relaxed;
+  line-height: 1.65;
 }
 
 /* ProseMirror base inside editor */
 .ProseMirror {
-  @apply min-h-[360px] focus:outline-none;
+  @apply min-h-[360px] focus:outline-none w-full max-w-full;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+.ProseMirror * {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .ProseMirror h2 {
   @apply text-lg font-bold mt-3 mb-1;

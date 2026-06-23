@@ -172,7 +172,7 @@ export function RichTextEditor({ value, onChange, placeholder, className }: Rich
         content: value || "",
         editorProps: {
             attributes: {
-                class: "min-h-[360px] focus:outline-none text-sm leading-relaxed text-foreground px-4 py-3 rich-content",
+                class: "min-h-[360px] focus:outline-none text-base sm:text-sm leading-relaxed text-foreground px-3 sm:px-4 py-3 rich-content w-full max-w-full break-words",
             },
         },
         onUpdate({ editor }) {
@@ -218,7 +218,7 @@ export function RichTextEditor({ value, onChange, placeholder, className }: Rich
 
     return (
         <>
-            <div ref={containerRef} className={cn("border border-border/60 rounded-lg bg-background/50", className)}>
+            <div ref={containerRef} className={cn("border border-border/60 rounded-lg bg-background/50 w-full max-w-full overflow-x-hidden", className)}>
                 <div
                     ref={inlineToolbarRef}
                     className="border-b border-border/40 bg-muted/30 rounded-t-lg"

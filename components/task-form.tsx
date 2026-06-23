@@ -221,7 +221,7 @@ export function TaskForm({ task = null, onComplete }: TaskFormProps) {
                             </div>
 
                             {/* Bosquejo y Notas */}
-                            <div className="md:col-span-2 space-y-4">
+                            <div className="md:col-span-2 space-y-4 min-w-0 w-full">
                                 <h4 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                                     Notas / Bosquejo
                                 </h4>
