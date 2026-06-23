@@ -10,6 +10,7 @@ import { es } from "date-fns/locale"
 import { useTasks } from "@/lib/task-provider"
 import { useMobile } from "@/hooks/use-mobile"
 import type { Task } from "@/lib/types"
+import { stripHtml } from "@/lib/utils"
 
 interface TaskCalendarProps {
     onEdit: (task: Task) => void
@@ -18,23 +19,11 @@ interface TaskCalendarProps {
 export function TaskCalendar({ onEdit }: TaskCalendarProps) {
     const { tasks } = useTasks()
     const [selectedDate, setSelectedDate] = useState<Date>(new Date())
+    const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null)
     const isMobile = useMobile()
 
     // Get tasks for the selected date
     const tasksForSelectedDate = tasks.filter((task: { dueDate: string | number | Date }) => isSameDay(new Date(task.dueDate), selectedDate))
-
-    const getPriorityColor = (priority: string) => {
-        switch (priority) {
-            case "high":
-                return "bg-red-100 text-red-800 border-red-300"
-            case "medium":
-                return "bg-yellow-100 text-yellow-800 border-yellow-300"
-            case "low":
-                return "bg-green-100 text-green-800 border-green-300"
-            default:
-                return ""
-        }
-    }
 
     return (
         <div className={isMobile ? "space-y-4" : "grid grid-cols-1 md:grid-cols-2 gap-6"}>
@@ -72,18 +61,62 @@ export function TaskCalendar({ onEdit }: TaskCalendarProps) {
                 <CardContent>
                     <div className="space-y-4">
                         {tasksForSelectedDate.map((task: Task) => (
-                            <div key={task.id} className="p-4 border rounded-lg hover:shadow-md transition-shadow">
-                                <div className="flex justify-between items-start mb-2">
-                                    <h3 className="font-medium">{task.title}</h3>
-                                    <Badge className={getPriorityColor(task.priority)}>
-                                        {task.priority === "high" ? "Alta" : task.priority === "medium" ? "Media" : "Baja"}
+                            <div key={task.id} className="p-4 border rounded-lg hover:shadow-md transition-all duration-200 bg-card/20">
+                                <div className="flex justify-between items-start mb-3 gap-2">
+                                    <h3 className="font-semibold text-base text-foreground/90">{task.title}</h3>
+                                    <Badge variant="secondary" className="text-xs bg-primary/10 text-primary border-primary/20 whitespace-nowrap">
+                                        {task.category || "Dominical"}
                                     </Badge>
                                 </div>
-                                <p className="text-sm text-muted-foreground mb-2">Versículo: {task.verse}</p>
-                                {task.notes && <p className="text-sm mb-3">{task.notes}</p>}
-                                <Button variant="outline" size="sm" onClick={() => onEdit(task)} className="w-full mt-2">
-                                    Editar
-                                </Button>
+                                <div className="space-y-1 text-sm text-muted-foreground mb-3">
+                                    <p className="flex items-center justify-between">
+                                        <span>Versículo:</span>
+                                        <span className="font-mono text-primary font-semibold bg-primary/5 px-1.5 py-0.5 rounded">{task.verse}</span>
+                                    </p>
+                                </div>
+
+                                {expandedTaskId === task.id ? (
+                                    <div className="mt-3 pt-3 border-t border-border/40 space-y-3 animate-in fade-in duration-200">
+                                        <div className="space-y-1.5">
+                                            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Bosquejo / Notas:</span>
+                                            <div className="p-3 border border-border/60 rounded-lg bg-background/50 text-sm leading-relaxed max-h-[300px] overflow-y-auto overflow-x-hidden">
+                                                {task.notes ? (
+                                                    <div
+                                                        className="rich-content"
+                                                        dangerouslySetInnerHTML={{ __html: task.notes }}
+                                                    />
+                                                ) : (
+                                                    <span className="text-muted-foreground italic">No hay notas o bosquejo.</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    task.notes && (
+                                        <p className="text-xs mb-3 text-muted-foreground/80 line-clamp-2 italic">
+                                            {stripHtml(task.notes)}
+                                        </p>
+                                    )
+                                )}
+
+                                <div className="flex gap-2 mt-4">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="flex-1 bg-background/50 border-border/50 text-xs"
+                                        onClick={() => setExpandedTaskId(expandedTaskId === task.id ? null : task.id)}
+                                    >
+                                        {expandedTaskId === task.id ? "Ocultar" : "Ver Detalle"}
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="flex-1 text-xs"
+                                        onClick={() => onEdit(task)}
+                                    >
+                                        Editar
+                                    </Button>
+                                </div>
                             </div>
                         ))}
                     </div>
@@ -92,4 +125,3 @@ export function TaskCalendar({ onEdit }: TaskCalendarProps) {
         </div>
     )
 }
-

@@ -12,6 +12,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  viewportFit: "cover",
 };
 
 export const metadata: Metadata = {
@@ -34,13 +35,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png" />
         <link rel="mask-icon" href="/icons/safari-pinned-tab.svg" color="#2c3e50" />
       </head>
-      <body>
+      <body className="overflow-x-hidden">
         <ThemeProvider attribute="class" defaultTheme="light">
           {children}
           <Toaster position="top-center" />
         </ThemeProvider>
         {/* Registro del Service Worker para PWA */}
-        {typeof window !== 'undefined' && <script src="/sw-register.js" />}
+        <script src="/sw-register.js" defer />
       </body>
     </html>
   );

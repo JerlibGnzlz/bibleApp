@@ -7,20 +7,23 @@ import { TaskTable } from "@/components/task-table"
 import { TaskCalendar } from "@/components/task-calendar"
 import { TaskProvider, useTasks } from "@/lib/task-provider"
 import { Button } from "@/components/ui/button"
-import { Plus, CalendarIcon, List, Settings, BookOpen, Clock, Activity } from "lucide-react"
+import { Plus, CalendarIcon, List, Settings, BookOpen, Activity } from "lucide-react"
 import { useMobile } from "@/hooks/use-mobile"
 import { InstallPWA } from "@/components/install-pwa"
 import type { Task } from "@/lib/types"
 import { PWADebug } from "@/components/pwa-debug"
+import { PreachView } from "@/components/preach-view"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 
 function DashboardContent({
   onEdit,
-  onTabChange
+  onTabChange,
+  onPreach,
 }: {
   onEdit: (task: Task | null) => void,
-  onTabChange: (tab: string) => void
+  onTabChange: (tab: string) => void,
+  onPreach: (task: Task) => void,
 }) {
   const { tasks } = useTasks()
 
@@ -61,10 +64,15 @@ function DashboardContent({
                 <CalendarIcon className="w-4 h-4 text-primary" />
                 <span>{format(new Date(nextTask.dueDate), "EEEE d 'de' MMMM", { locale: es })}</span>
               </div>
-              <div className="flex items-center gap-1.5 bg-background/50 px-3 py-1.5 rounded-full border border-border/50">
-                <Clock className="w-4 h-4 text-primary" />
-                <span className="capitalize">{nextTask.priority === 'high' ? 'Alta Prioridad' : nextTask.priority === 'medium' ? 'Prioridad Media' : 'Prioridad Baja'}</span>
-              </div>
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => onPreach(nextTask)}
+                className="shadow-md shadow-primary/20"
+              >
+                <BookOpen className="w-4 h-4 mr-2" />
+                Predicar
+              </Button>
             </div>
           </div>
         ) : (
@@ -108,6 +116,7 @@ function DashboardContent({
 
 export default function Home() {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
+  const [preachingTask, setPreachingTask] = useState<Task | null>(null)
   const [activeTab, setActiveTab] = useState("table")
   const [showDebug, setShowDebug] = useState(false)
   const isMobile = useMobile()
@@ -150,6 +159,7 @@ export default function Home() {
           <DashboardContent
             onEdit={setSelectedTask}
             onTabChange={setActiveTab}
+            onPreach={setPreachingTask}
           />
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -170,10 +180,13 @@ export default function Home() {
 
             <div className="animate-in fade-in zoom-in-95 duration-300">
               <TabsContent value="table">
-                <TaskTable onEdit={(task) => {
-                  setSelectedTask(task)
-                  setActiveTab("form")
-                }} />
+                <TaskTable
+                  onEdit={(task) => {
+                    setSelectedTask(task)
+                    setActiveTab("form")
+                  }}
+                  onPreach={setPreachingTask}
+                />
               </TabsContent>
 
               <TabsContent value="calendar">
@@ -183,7 +196,7 @@ export default function Home() {
               </TabsContent>
 
               <TabsContent value="form">
-                <div className="max-w-2xl mx-auto">
+                <div className="max-w-5xl mx-auto">
                   <TaskForm
                     task={selectedTask}
                     onComplete={() => {
@@ -202,6 +215,10 @@ export default function Home() {
             </div>
           )}
         </div>
+
+        {preachingTask && (
+          <PreachView task={preachingTask} onClose={() => setPreachingTask(null)} />
+        )}
       </div>
     </TaskProvider>
   )

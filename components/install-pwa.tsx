@@ -1,71 +1,111 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client"
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Download } from "lucide-react"
+import {
+    AlertDialog,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { Download, Smartphone } from "lucide-react"
 
 interface BeforeInstallPromptEvent extends Event {
     prompt: () => Promise<void>
     userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>
 }
 
+function isIOS(): boolean {
+    if (typeof navigator === "undefined") return false
+    return /iPad|iPhone|iPod/.test(navigator.userAgent)
+}
+
+function isStandalone(): boolean {
+    if (typeof window === "undefined") return false
+    return window.matchMedia("(display-mode: standalone)").matches
+        || ("standalone" in navigator && (navigator as Navigator & { standalone?: boolean }).standalone === true)
+}
+
 export function InstallPWA() {
     const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
-    const [isInstallable, setIsInstallable] = useState(false)
+    const [showIOSGuide, setShowIOSGuide] = useState(false)
+    const [installed, setInstalled] = useState(false)
 
     useEffect(() => {
-        // Check if the app is already installed
-        const isStandalone = window.matchMedia("(display-mode: standalone)").matches
+        setInstalled(isStandalone())
+    }, [])
 
-        if (isStandalone) {
-            setIsInstallable(false)
-            return
-        }
+    useEffect(() => {
+        if (installed) return
 
         const handleBeforeInstallPrompt = (e: Event) => {
-            // Prevent the mini-infobar from appearing on mobile
             e.preventDefault()
-            // Stash the event so it can be triggered later
             setDeferredPrompt(e as BeforeInstallPromptEvent)
-            // Update UI to notify the user they can install the PWA
-            setIsInstallable(true)
         }
 
         window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt)
-
-        return () => {
-            window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt)
-        }
-    }, [])
+        return () => window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt)
+    }, [installed])
 
     const handleInstallClick = async () => {
-        if (!deferredPrompt) {
+        if (deferredPrompt) {
+            deferredPrompt.prompt()
+            await deferredPrompt.userChoice
+            setDeferredPrompt(null)
             return
         }
 
-        // Show the install prompt
-        deferredPrompt.prompt()
-
-        // Wait for the user to respond to the prompt
-        const { outcome } = await deferredPrompt.userChoice
-
-        // We've used the prompt, and can't use it again, throw it away
-        setDeferredPrompt(null)
-
-        // Hide the install button
-        setIsInstallable(false)
+        if (isIOS()) {
+            setShowIOSGuide(true)
+        }
     }
 
-    if (!isInstallable) {
-        return null
-    }
+    if (installed) return null
+
+    const showButton = deferredPrompt || isIOS()
+
+    if (!showButton) return null
 
     return (
-        <Button variant="outline" size="sm" className="flex items-center gap-1" onClick={handleInstallClick}>
-            <Download className="h-4 w-4" />
-            <span>Instalar App</span>
-        </Button>
+        <>
+            <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-1.5"
+                onClick={handleInstallClick}
+            >
+                {deferredPrompt ? (
+                    <>
+                        <Download className="h-4 w-4" />
+                        <span className="hidden sm:inline">Instalar App</span>
+                        <span className="sm:hidden">Instalar</span>
+                    </>
+                ) : (
+                    <>
+                        <Smartphone className="h-4 w-4" />
+                        <span className="hidden sm:inline">Instalar en iPhone</span>
+                        <span className="sm:hidden">Instalar</span>
+                    </>
+                )}
+            </Button>
+
+            <AlertDialog open={showIOSGuide} onOpenChange={setShowIOSGuide}>
+                <AlertDialogContent className="max-w-sm">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Instalar en iPhone</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Sigue estos pasos para agregar la app a tu pantalla de inicio:
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <ol className="list-decimal pl-5 space-y-2 text-sm text-foreground/90">
+                        <li>Abrí esta página en <strong>Safari</strong> (no en Chrome ni en el navegador de Instagram).</li>
+                        <li>Tocá el botón <strong>Compartir</strong> (cuadrado con flecha hacia arriba).</li>
+                        <li>Deslizá y elegí <strong>Agregar a pantalla de inicio</strong>.</li>
+                        <li>Tocá <strong>Agregar</strong>. Listo — aparecerá como una app.</li>
+                    </ol>
+                </AlertDialogContent>
+            </AlertDialog>
+        </>
     )
 }
-

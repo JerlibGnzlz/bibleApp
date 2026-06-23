@@ -4,7 +4,7 @@ export interface Task {
     verse: string
     notes?: string
     dueDate: Date | string
-    priority: "low" | "medium" | "high"
+    priority?: "low" | "medium" | "high"
     category: string
     createdAt: Date | string
 }

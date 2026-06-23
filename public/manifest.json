@@ -1,24 +1,32 @@
 {
-    "name": "BibleApp",
-    "short_name": "BibleApp",
-    "description": "Una aplicación para pastores cristianos que desean organizar sus prédicas en una agenda.",
-    "start_url": "/",
-    "display": "standalone",
-    "background_color": "#ffffff",
-    "theme_color": "#2c3e50",
-    "icons": [
-      {
-        "src": "/logo.png",
-        "sizes": "192x192",
-        "type": "image/png"
-      },
-      {
-        "src": "/logo.png",
-        "sizes": "512x512",
-        "type": "image/png"
-      }
-    ],
-    "lang": "es",
-    "dir": "ltr",
-    "orientation": "portrait"
-  }
+  "name": "Planificador de Prédicas",
+  "short_name": "Prédicas",
+  "description": "Organiza y prepara tus mensajes bíblicos de manera eficiente.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2c3e50",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "lang": "es",
+  "dir": "ltr",
+  "orientation": "portrait"
+}
