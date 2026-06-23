@@ -1,5 +1,5 @@
-const STATIC_CACHE = 'bibleapp-static-v3';
-const DYNAMIC_CACHE = 'bibleapp-dynamic-v3';
+const STATIC_CACHE = 'bibleapp-static-v4';
+const DYNAMIC_CACHE = 'bibleapp-dynamic-v4';
 
 const urlsToCache = [
   '/',
@@ -40,6 +40,7 @@ self.addEventListener('fetch', event => {
     event.respondWith(
       caches.match(event.request).then(response => {
         return response || fetch(event.request).then(fetchResponse => {
+          if (!fetchResponse.ok) return fetchResponse;
           return caches.open(STATIC_CACHE).then(cache => {
             cache.put(event.request, fetchResponse.clone());
             return fetchResponse;
